@@ -9,7 +9,6 @@ var searchTrigger = true;
 
 $(document).ready(function(e) {
     $.getJSON( "data/json/books.json", function( data ) {
-        //console.log( "JSON Data: " + data);
         $.each( data, function( key, val ) {
             booklist.push(val);
         });
@@ -75,7 +74,8 @@ function addResults(bookIndex){
         +'<div>'
         +'<div class="col-md-1"></div>'
         +'<div class="col-md-2">'
-        +'<a class="book-link" href="javascript:bookProfile(' + bookIndex + ');" onclick="bookProfile(bookIndex)"><img class = "book-cover" style="height:75px;width:50px;" src="data/img/book_cover/images/' + book.ISBN + '.jpg"></a>'
+        +'<a class="book-link" href="javascript:bookProfile(' + bookIndex + ');" onclick="bookProfile(' + bookIndex
+        + ')"><img class = "book-cover" style="height:75px;width:50px;" src="data/img/book_cover/images/' + book.ISBN + '.jpg"></a>'
         +'</div>'
         +'<div class="col-md-2">'
         +'<h4 class="text-center">' + book.Title + '</h4>'
@@ -136,10 +136,10 @@ function addProfile(index){
         +'<p class="profile-text">E-Book: ' + book.EbookPrice + '</p>'
         +'</div>'
         +'<div class="col-md-1">'
-        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'new\', index)">Add new</button>'
-        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'used\', index)">Add used</button>'
-        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'rental\', index)">Add rental</button>'
-        +'<button class="add-item" onclick="addItem(1, \'e-book\', index)">Add E-book(1)</button>'
+        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'new\',' + index + ')">Add new</button>'
+        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'used\',' + index + ')">Add used</button>'
+        +'<button class="add-item" onclick="addItem($(\'#quantity\').val(), \'rental\',' + index + ')">Add rental</button>'
+        +'<button class="add-item" onclick="addItem(1, \'e-book\',' + index + ')">Add E-book(1)</button>'
         +'</div>'
         +'<div class="col-md-1">'
         +'<a href="javascript:void(0);" onclick="closeProfile()"><img class="closeicon" src="data/img/closeicon.png" style="height:5vh;width:5vh;" alt="Close Profile"></a>'
@@ -167,6 +167,7 @@ function addItem(quantity, type, ID){
 }
 
 function bookProfile(index) {
+    $(".book-profile").detach();
     searchTrigger = false;
     for (i in booklist) {
         $("#result" + i).detach();
@@ -178,4 +179,99 @@ function bookProfile(index) {
 
 function addBlank(){
     $("#results-table").append('<section class="row"></section>');
+}
+
+function checkout(){
+    searchTrigger = false;
+    var prices;
+    var subtotal = 0;
+    var shipping = 0;
+
+    $("#cart-table").detach();
+    $("#checkout-fields").detach();
+    $(".cart-item").detach();
+
+    $("#search-bar").append('<section class="row"></section>');
+    $("#search-bar").append(''
+        +'<section class = "row" id="cart-table">'
+        +'<div class="col-md-1"></div>'
+        +'<div class="col-md-2">'
+        +'<h3 class="cart-text text-center">Cover</h3>'
+        +'</div>'
+        +'<div class="col-md-2">'
+        +'<h3 class = "cart-text">Title, Type</h3>'
+        +'</div>'
+        +'<div class="col-md-2">'
+        +'<h3 class = "cart-text">Price x Quantity</h3>'
+        +'</div>'
+        +'<div class="col-md-4" id="checkout-fields"></div>'
+        +'<div class="col-md-1">'
+        +'<a href="javascript:void(0);" onclick="closeCart()"><img class="closeicon" src="data/img/closeicon.png" style="height:5vh;width:5vh;" alt="Close Cart"></a>'
+        +'</div>'
+        +'</section>');
+
+    $("#results-table").detach();
+    $(".book-profile").detach();
+    $(".search-results").detach();
+
+    for (i in cart){
+        var prices = generateSubcart(cart[i].Quantity, cart[i].Type, cart[i].ID);
+        subtotal += prices.Subtotal;
+        shipping += prices.Shipping;
+    }
+
+    if (shipping > 0){shipping = 15;}
+
+    $("#checkout-fields").append('' +
+        '<div class="row">'
+        +'<h4>Subtotal: $' + subtotal.toFixed(2) + '</h4>'
+        +'<h4>Tax: ' + (subtotal * 0.075).toFixed(2) + '</h4>'
+        +'<h4>Shipping: $' + shipping + '</h4>'
+        +'<h4>Total: $' + (subtotal*1.075 + shipping).toFixed(2) + '</h4>'
+        + '</div>');
+
+}
+
+function generateSubcart(quantity, type, index){
+    var book = booklist[index];
+    var bookprice;
+    var shipping = 0;
+
+    switch (type){
+        case "new":
+            bookprice = book.NewPrice;
+            shipping = 15;
+            break;
+        case "used":
+            bookprice = book.UsedPrice;
+            shipping = 15;
+            break;
+        case "rental":
+            bookprice = book.RentalPrice;
+            shipping = 15;
+            break;
+        case "e-book":
+            bookprice = book.EbookPrice;
+            break;
+    }
+
+    $("#search-bar").append(''
+    +'<section class = "row cart-item">'
+    +'<div class="col-md-1"></div>'
+    +'<div class="col-md-2">'
+    +'<img class = "book-cover" style="height:150px;width:100px;" src="data/img/book_cover/images/' + book.ISBN + '.jpg"></img>'
+    +'</div>'
+    +'<div class="col-md-2">'
+    +'<p class = "cart-text">' + book.Title + ', '+ type + '</p>'
+    +'</div>'
+    +'<div class="col-md-2">'
+    +'<p class = "cart-text">' + '$' + bookprice + ' x ' + quantity + '</p>'
+    +'</div>'
+    +'</section>');
+
+    return {Subtotal: bookprice*quantity, Shipping: shipping};
+}
+
+function checkStock(index){
+    book = booklist[index];
 }
