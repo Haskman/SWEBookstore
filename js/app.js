@@ -7,6 +7,7 @@ var profileDOM = [];
 var cart = [];
 var searchTrigger = true;
 
+
 $(document).ready(function(e) {
     $.getJSON( "data/json/books.json", function( data ) {
         $.each( data, function( key, val ) {
@@ -17,6 +18,10 @@ $(document).ready(function(e) {
             addProfile(bookIndex);
         }
     });
+    if (getCookie("cart") != null){
+        cart = JSON.parse(getCookie("cart"));
+        $("#cartlogo").attr('src', 'data/img/cartactive.png');
+    }
     addBlank();
 });
 
@@ -156,9 +161,10 @@ function closeProfile(){
 }
 
 function addItem(quantity, type, ID){
-    if(quantity > 0 && quantity <21){
+    if(quantity > 0 && quantity <21 && quantity%1 === 0){
         cart.push({ID: ID, Quantity: quantity, Type: type});
         $("#cartlogo").attr('src', 'data/img/cartactive.png');
+        createCookie("cart",JSON.stringify(cart),1);
         alert("Cart updated");
     }
     else{
@@ -183,14 +189,15 @@ function addBlank(){
 
 function checkout(){
     searchTrigger = false;
+
     var prices;
     var subtotal = 0;
     var shipping = 0;
 
+    $("#results-table").css("visibility","hidden");
     $("#cart-table").detach();
     $("#checkout-fields").detach();
     $(".cart-item").detach();
-
     $("#search-bar").append('<section class="row"></section>');
     $("#search-bar").append(''
         +'<section class = "row" id="cart-table">'
@@ -210,7 +217,7 @@ function checkout(){
         +'</div>'
         +'</section>');
 
-    $("#results-table").detach();
+    $("#results-table").visibility = "hidden";
     $(".book-profile").detach();
     $(".search-results").detach();
 
@@ -223,7 +230,7 @@ function checkout(){
     if (shipping > 0){shipping = 15;}
 
     $("#checkout-fields").append('' +
-        '<div class="row">'
+        '<div class="row cart-total">'
         +'<h4>Subtotal: $' + subtotal.toFixed(2) + '</h4>'
         +'<h4>Tax: ' + (subtotal * 0.075).toFixed(2) + '</h4>'
         +'<h4>Shipping: $' + shipping + '</h4>'
@@ -272,6 +279,16 @@ function generateSubcart(quantity, type, index){
     return {Subtotal: bookprice*quantity, Shipping: shipping};
 }
 
+//TODO: Implement checking stock
 function checkStock(index){
     book = booklist[index];
+}
+
+function closeCart(){
+    $("#cart-table").detach();
+    $("#checkout-fields").detach();
+    $(".cart-item").detach();
+    $("#results-table").visibility = "visible";
+    searchTrigger = true;
+    refreshResults();
 }
