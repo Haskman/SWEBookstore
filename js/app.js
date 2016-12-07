@@ -174,7 +174,7 @@ function closeProfile(){
 
 //Add item to cart ith quantity, type and ID
 function addItem(quantity, type, ID){
-    if(quantity > 0 && quantity <21 && quantity%1 === 0){
+    if(quantity > 0 && quantity <21 && quantity%1 === 0 && quantity != ''){
         cart.push({ID: ID, Quantity: quantity, Type: type});
         $("#cartlogo").attr('src', 'data/img/cartactive.png');
         createCookie("cart",JSON.stringify(cart),1);
