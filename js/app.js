@@ -498,8 +498,10 @@ function submitOrder(cart, address, payInfo, type){
                 else if (cart[i].Type == 'rental'){
                     //booklist[cart[i].id].RentalQuantity -= cart[i].Quantity;
                 }
+                cart.splice(i, 1);
             }
-            cart = [];
+            $("#cartlogo").attr('src', 'data/img/cartlogo.png');
+            createCookie("cart",JSON.stringify(cart),1);
             closeCart();
 
             if (ebook){
